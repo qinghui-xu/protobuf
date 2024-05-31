@@ -1,8 +1,9 @@
 name: Presubmit Workflow
+run-name: Presubmit ${{github.ref_name}} ${{github.event_name}}-${{github.event.pull_request.number}} (${{github.event.action}})
 
 on:
   push:
-    branches: [ "github_actions" ]
+    branches: [ "github_**" ]
   pull_request:
     branches: [ "github_actions" ]
 
