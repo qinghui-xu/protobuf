@@ -1,0 +1,17 @@
+name: Criteo Postsubmit Workflow
+run-name: Postsubmit ${{github.event_name}} (${{github.sha}})
+
+on:
+  # The merge of a pull request will generate a push event
+  # CI should be run for both a direct push and a merge of pull request
+  push:
+    branches: ["github_actions"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Sing
+      run: echo "postsubmit"
+
