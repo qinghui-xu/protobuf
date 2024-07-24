@@ -269,6 +269,8 @@ void MessageGenerator::Generate(io::Printer* printer) {
       "}\n\n");
   }
 
+  // class scope insertion point for setEmpty / setNull methods on repeated fields
+  printer->Print("// @@protoc_insertion_point(class_scope:$full_name$)\n", "full_name", descriptor_->full_name());
   // Standard methods
   GenerateFrameworkMethods(printer);
   GenerateMessageSerializationMethods(printer);
