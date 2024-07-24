@@ -821,6 +821,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value.getNumber());\n"
                  "  onChanged();\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -834,6 +835,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "    $name$_.add(value.getNumber());\n"
                  "  }\n"
                  "  onChanged();\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -845,6 +847,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  $name$_ = java.util.Collections.emptyList();\n"
       "  $clear_mutable_bit_builder$;\n"
       "  onChanged();\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -886,6 +889,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  ensure$capitalized_name$IsMutable();\n"
                    "  $name$_.add(value);\n"
                    "  onChanged();\n"
+                   "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$Value)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -900,6 +904,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "    $name$_.add(value);\n"
         "  }\n"
         "  onChanged();\n"
+        "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$Value)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);

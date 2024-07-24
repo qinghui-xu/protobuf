@@ -798,6 +798,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $repeated_add$(value);\n"
                  "  $on_changed$\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -810,6 +811,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
                  "  com.google.protobuf.AbstractMessageLite.Builder.addAll(\n"
                  "      values, $name$_);\n"
                  "  $on_changed$\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -821,6 +823,7 @@ void RepeatedImmutablePrimitiveFieldGenerator::GenerateBuilderMembers(
       "  $name$_ = $empty_list$;\n"
       "  $clear_mutable_bit_builder$;\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);

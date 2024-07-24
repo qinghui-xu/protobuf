@@ -910,6 +910,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $name$_.add(value);\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -923,6 +924,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "      values, $name$_);\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -935,6 +937,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
       "    $empty_list$;\n"
       "  $clear_has_field_bit_builder$;\n"
       "  $on_changed$\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -955,6 +958,7 @@ void RepeatedImmutableStringFieldGenerator::GenerateBuilderMembers(
                  "  $name$_.add(value);\n"
                  "  $set_has_field_bit_builder$\n"
                  "  $on_changed$\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$Bytes)\n"
                  "  return this;\n"
                  "}\n");
 }
