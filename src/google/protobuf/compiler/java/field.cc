@@ -247,6 +247,7 @@ void SetCommonFieldVariables(
     absl::flat_hash_map<absl::string_view, std::string>* variables) {
   (*variables)["field_name"] = descriptor->name();
   (*variables)["name"] = info->name;
+  (*variables)["containing_type_full_name"] = descriptor->containing_type()->full_name();
   (*variables)["classname"] = descriptor->containing_type()->name();
   (*variables)["capitalized_name"] = info->capitalized_name;
   (*variables)["disambiguated_reason"] = info->disambiguated_reason;
