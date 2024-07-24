@@ -419,6 +419,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
       "  $clear_has_field_bit_builder$\n"
       "  internalGetMutable$capitalized_name$().getMutableMap()\n"
       "      .clear();\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -430,6 +431,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                  "  $key_null_check$\n"
                  "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                  "      .remove(key);\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.remove$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -461,6 +463,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, $name$ValueConverter.doBackward(value));\n"
                    "  $set_has_field_bit_builder$\n"
+                   "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.put$capitalized_name$)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -474,6 +477,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "      internalGetMutable$capitalized_name$().getMutableMap())\n"
         "          .putAll(values);\n"
         "  $set_has_field_bit_builder$\n"
+        "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.putAll$capitalized_name$)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -505,6 +509,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .put(key, value);\n"
           "  $set_has_field_bit_builder$\n"
+          "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.put$capitalized_name$Value)\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
@@ -517,6 +522,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
           "  internalGetMutable$capitalized_name$().getMutableMap()\n"
           "      .putAll(values);\n"
           "  $set_has_field_bit_builder$\n"
+          "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.putAll$capitalized_name$Value)\n"
           "  return this;\n"
           "}\n");
       printer->Annotate("{", "}", descriptor_);
@@ -547,6 +553,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
                    "  internalGetMutable$capitalized_name$().getMutableMap()\n"
                    "      .put(key, value);\n"
                    "  $set_has_field_bit_builder$\n"
+                   "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.put$capitalized_name$)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -559,6 +566,7 @@ void ImmutableMapFieldGenerator::GenerateBuilderMembers(
         "  internalGetMutable$capitalized_name$().getMutableMap()\n"
         "      .putAll(values);\n"
         "  $set_has_field_bit_builder$\n"
+        "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.putAll$capitalized_name$)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);
