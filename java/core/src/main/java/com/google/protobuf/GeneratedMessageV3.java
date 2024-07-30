@@ -2410,6 +2410,7 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
         hasHasMethod =
             descriptor.getFile().getSyntax() == FileDescriptor.Syntax.PROTO2
                 || descriptor.hasOptionalKeyword()
+                || existsMethod(messageClass, "has" + camelCaseName)
                 || (!isOneofField && descriptor.getJavaType() == FieldDescriptor.JavaType.MESSAGE);
         ReflectionInvoker reflectionInvoker =
             new ReflectionInvoker(
@@ -3366,6 +3367,15 @@ public abstract class GeneratedMessageV3 extends AbstractMessage implements Seri
               .setKey(entry.getKey())
               .setValue(entry.getValue())
               .build());
+    }
+  }
+
+  private static boolean existsMethod(Class msgClass, String methodName, Class... parameterTypes) {
+    try {
+      msgClass.getMethod(methodName, parameterTypes);
+      return true;
+    } catch (NoSuchMethodException e) {
+      return false;
     }
   }
 }
