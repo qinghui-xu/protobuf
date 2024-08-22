@@ -46,7 +46,9 @@ jobs:
       # Strip 'v' prefix of the tag
       run: |
         $proto_tag="${{ github.ref_name }}"
-        echo "proto_version=${proto_tag#v}" >> "$GITHUB_ENV"
+        $proto_tag -match "v?(?<version>[0-9]+.*)"
+        $proto_version=$matches['version']
+        echo "proto_version=$proto_version" >> "$GITHUB_ENV"
 
     - name: Show version
       run: |
