@@ -82,7 +82,7 @@ jobs:
       uses: actions/upload-artifact@v4.3.6
       with:
         name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-        path: ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+        path: ${{ github.workspace }}/build/protoc
         retention-days: 7
         compression-level: 0
 
