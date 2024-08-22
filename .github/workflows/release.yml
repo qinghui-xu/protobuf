@@ -47,6 +47,7 @@ jobs:
       run: |
         $proto_tag = "${{ github.ref_name }}"
         $proto_version = $proto_tag.TrimStart("v")
+        echo "proto_version=$proto_version"
         echo "proto_version=$proto_version" >> "$GITHUB_ENV"
 
     - name: Show version
