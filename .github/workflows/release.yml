@@ -18,20 +18,20 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         build_type: [Release]
         include:
-          - os: ubuntu-latest
-            os_family: linux
-            arch: x86_64
+          # - os: ubuntu-latest
+          #   os_family: linux
+          #   arch: x86_64
           # macos-latest image is aarch 64 based
           - os: macos-latest
             os_family: osx
             arch: aarch_64
           # macos-13 image is the most recent x86 based macos
-          - os: macos-13
-            os_family: osx
-            arch: x86_64
-          - os: windows-latest
-            os_family: windows
-            arch: x86_64
+          # - os: macos-13
+          #   os_family: osx
+          #   arch: x86_64
+          # - os: windows-latest
+          #   os_family: windows
+          #   arch: x86_64
 
     steps:
     - name: Parse version for Unix
@@ -72,6 +72,7 @@ jobs:
       run: >
         mv $(readlink -f ${{ github.workspace }}/build/protoc)
         ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+        chmod +x ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
     - name: Rename protoc for Windows
       if: ${{ matrix.os_family == 'windows' }}
