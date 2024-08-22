@@ -116,7 +116,7 @@ if (NOT protobuf_BUILD_PROTOBUF_BINARIES)
   set(protobuf_INSTALL OFF)
 endif()
 # Parse version tweaks
-set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([-]rc[-]|\\.)?([0-9]*)$")
+set(protobuf_VERSION_REGEX "^([0-9]+)\\.([0-9]+)\\.([0-9]+)([-]rc[-]|\\.)?([0-9]*)(-criteo)$")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\1"
   protobuf_VERSION_MAJOR "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\2"
@@ -125,6 +125,8 @@ string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\3"
   protobuf_VERSION_PATCH "${protobuf_VERSION_STRING}")
 string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\5"
   protobuf_VERSION_PRERELEASE "${protobuf_VERSION_STRING}")
+string(REGEX REPLACE     "${protobuf_VERSION_REGEX}" "\\6"
+  protobuf_VERSION_CRITEO "${protobuf_VERSION_STRING}")
 
 message(STATUS "${protobuf_VERSION_PRERELEASE}")
 
@@ -137,6 +139,11 @@ if(protobuf_VERSION_PRERELEASE)
 else()
   set(protobuf_VERSION "${protobuf_VERSION}.0")
 endif()
+
+if(protobuf_VERSION_CRITEO)
+  set(protobuf_VERSION "${protobuf_VERSION}${protobuf_VERSION_CRITEO}")
+endif()
+
 message(STATUS "${protobuf_VERSION}")
 
 if(protobuf_VERBOSE)
