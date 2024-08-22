@@ -35,8 +35,6 @@ jobs:
     steps:
     - name: Checkout Protobuf
       uses: actions/checkout@v4
-      with:
-        ref: criteo-3.22.x
 
     - name: Checkout submodule
       run: git submodule update --init --recursive
@@ -50,20 +48,28 @@ jobs:
         -DCMAKE_CXX_STANDARD=14
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-    # - name: Build
-    #   # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-    #  run: cmake --build ${{github.workspace}}/build
+    # - name: Build Protobuf
+    #   run: cmake --build ${{github.workspace}}/build
 
-    # - name: Rename artifact
+    # - name: Rename protoc
     #   if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
     #   run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
-    - name: Fake artifact
-      run: >
-        echo "echo ${{ matrix.os_family }} - ${{ matrix.arch }}" >
-        ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    - name: Release artifact
-      uses: softprops/action-gh-release@v2.0.8
+    # - name: Release protoc
+    #   uses: softprops/action-gh-release@v2.0.8
+    #   with:
+    #     files: |
+    #       ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+
+    - name: Setup Java JDK
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: actions/setup-java@v4.2.2
       with:
-        files: |
-          ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+        java-version: 8
+        distribution: temurin
+
+    - name: Test java version
+      run: |
+        which java
+        echo $JAVA_HOME
+        java -version
