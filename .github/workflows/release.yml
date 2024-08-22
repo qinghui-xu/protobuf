@@ -96,8 +96,8 @@ jobs:
       if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         cd ${{ github.workspace }}/java
-        mvn versions:set -DnewVersion="${{ env.proto_version }}"
-        mvn package -pl core -DskipTests
+        mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
+        mvn package -pl core -am -DskipTests
         mvn source:jar -pl core
         cp pom.xml ${{ github.workspace }}/build/protobuf-parent.${{ env.proto_version }}.pom
         cp core/pom.xml ${{ github.workspace }}/build/protobuf-java.${{ env.proto_version }}.pom
