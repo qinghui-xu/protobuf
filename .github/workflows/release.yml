@@ -53,7 +53,7 @@ jobs:
     - name: Show version
       run: |
         echo ${{ github.ref_name }}
-        echo "$proto_version"
+        echo "${{ env.proto_version }}"
     
     - name: Checkout Protobuf
       uses: actions/checkout@v4
