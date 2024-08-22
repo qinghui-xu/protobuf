@@ -69,10 +69,11 @@ jobs:
 
     - name: Rename protoc for Unix
       if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-      run: >
-        mv $(readlink -f ${{ github.workspace }}/build/protoc)
-        ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+      run: |
+        ls -l ${{ github.workspace }}/build
+        mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
         chmod +x ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+        ls -l ${{ github.workspace }}/build
 
     - name: Rename protoc for Windows
       if: ${{ matrix.os_family == 'windows' }}
