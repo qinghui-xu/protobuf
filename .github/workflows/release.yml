@@ -43,7 +43,7 @@ jobs:
 
     - name: Parse version for Windows
       if: ${{ matrix.os_family == 'windows' }}
-      # Strip 'v' prefix of the tag
+      # Strip 'v' prefix of the tag, noting that windows env variable is namespaced with `env:`
       run: |
         $proto_tag = "${{ github.ref_name }}"
         $proto_version = $proto_tag.TrimStart("v")
@@ -54,7 +54,6 @@ jobs:
       run: |
         echo ${{ github.ref_name }}
         echo "github env ${{ env.proto_version }}"
-        echo "shell env $env:proto_version"
     
     - name: Checkout Protobuf
       uses: actions/checkout@v4
@@ -71,29 +70,43 @@ jobs:
         -DCMAKE_CXX_STANDARD=14
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-    #- name: Build Protobuf
-    #  run: cmake --build ${{github.workspace}}/build
+    - name: Build protoc
+      run: cmake --build ${{ github.workspace }}/build
 
-    #- name: Rename protoc
-    #  if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-    #  run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
+    - name: Rename protoc
+      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+      run: >
+        mv $(readlink -f ${{ github.workspace }}/build/protoc)
+        ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    #- name: Release protoc
-    #  uses: softprops/action-gh-release@v2.0.8
-    #  with:
-    #    files: |
-    #      ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+    - name: Publish protoc
+      uses: softprops/action-gh-release@v2.0.8
+      with:
+        files: |
+          ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    #- name: Setup Java JDK
-    #  if: ${{ matrix.os == 'ubuntu-latest' }}
-    #  uses: actions/setup-java@v4.2.2
-    #  with:
-    #    java-version: 8
-    #    distribution: temurin
+    - name: Setup Java JDK
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: actions/setup-java@v4.2.2
+      with:
+        java-version: 8
+        distribution: temurin
 
-    #- name: Build Java lib
-    #  if: ${{ matrix.os == 'ubuntu-latest' }}
-    #  run: |
-    #    cd ${{ github.workspace }}/java
-    #    mvn package -pl core
-    #    mv pom.xml protobuf-parent.
+    - name: Build Java lib
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      run: |
+        cd ${{ github.workspace }}/java
+        mvn versions:set -DnewVersion="${{ env.proto_version }}"
+        mvn package -pl core -DskipTests
+        mvn source:jar -pl core
+        cp pom.xml ${{ github.workspace }}/build/protobuf-parent.${{ env.proto_version }}.pom
+        cp core/pom.xml ${{ github.workspace }}/build/protobuf-java.${{ env.proto_version }}.pom
+        mv core/target/protobuf*.jar ${{ github.workspace }}/build/
+
+    - name: Publish Java lib
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: softprops/action-gh-release@v2.0.8
+      with:
+        files: |
+          ${{ github.workspace }}/build/protobuf-*.pom
+          ${{ github.workspace }}/build/protobuf-*.jar
