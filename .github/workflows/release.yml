@@ -1,6 +1,7 @@
 # This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
 # See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
 name: Release
+run-name: Release ${{github.ref_name}}
 
 on:
   push:
@@ -33,6 +34,17 @@ jobs:
             arch: x86_64
 
     steps:
+    - name: Parse version
+      # Strip 'v' prefix of the tag
+      run: |
+        proto_tag=${{ github.ref_name }}
+        echo "proto_version=${proto_tag#v}" >> "$GITHUB_ENV"
+
+    - name: Show version
+      run: |
+        echo ${{ github.ref_name }}
+        echo $proto_version
+    
     - name: Checkout Protobuf
       uses: actions/checkout@v4
 
@@ -48,28 +60,29 @@ jobs:
         -DCMAKE_CXX_STANDARD=14
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
 
-    # - name: Build Protobuf
-    #   run: cmake --build ${{github.workspace}}/build
+    #- name: Build Protobuf
+    #  run: cmake --build ${{github.workspace}}/build
 
-    # - name: Rename protoc
-    #   if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-    #   run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
+    #- name: Rename protoc
+    #  if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+    #  run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
 
-    # - name: Release protoc
-    #   uses: softprops/action-gh-release@v2.0.8
-    #   with:
-    #     files: |
-    #       ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+    #- name: Release protoc
+    #  uses: softprops/action-gh-release@v2.0.8
+    #  with:
+    #    files: |
+    #      ${{ github.workspace }}/build/protoc-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    - name: Setup Java JDK
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      uses: actions/setup-java@v4.2.2
-      with:
-        java-version: 8
-        distribution: temurin
+    #- name: Setup Java JDK
+    #  if: ${{ matrix.os == 'ubuntu-latest' }}
+    #  uses: actions/setup-java@v4.2.2
+    #  with:
+    #    java-version: 8
+    #    distribution: temurin
 
-    - name: Test java version
-      run: |
-        which java
-        echo $JAVA_HOME
-        java -version
+    #- name: Build Java lib
+    #  if: ${{ matrix.os == 'ubuntu-latest' }}
+    #  run: |
+    #    cd ${{ github.workspace }}/java
+    #    mvn package -pl core
+    #    mv pom.xml protobuf-parent.
