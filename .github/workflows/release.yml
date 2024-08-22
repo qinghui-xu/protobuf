@@ -67,10 +67,16 @@ jobs:
     - name: Build protoc
       run: cmake --build ${{ github.workspace }}/build
 
-    - name: Rename protoc
+    - name: Rename protoc for Unix
       if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
       run: >
         mv $(readlink -f ${{ github.workspace }}/build/protoc)
+        ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+
+    - name: Rename protoc for Windows
+      if: ${{ matrix.os_family == 'windows' }}
+      run: >
+        mv ${{ github.workspace }}/build/protoc.exe
         ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
     - name: Publish protoc
