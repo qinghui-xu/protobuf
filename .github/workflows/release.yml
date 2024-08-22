@@ -37,7 +37,7 @@ jobs:
     - name: Parse version
       # Strip 'v' prefix of the tag
       run: |
-        proto_tag=${{ github.ref_name }}
+        export proto_tag=${{ github.ref_name }}
         echo "proto_version=${proto_tag#v}" >> "$GITHUB_ENV"
 
     - name: Show version
