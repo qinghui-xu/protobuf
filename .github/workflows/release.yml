@@ -38,14 +38,14 @@ jobs:
       if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
       # Strip 'v' prefix of the tag
       run: |
-        proto_tag=${{ github.ref_name }}
+        proto_tag="${{ github.ref_name }}"
         echo "proto_version=${proto_tag#*v}" >> "$GITHUB_ENV"
 
     - name: Parse version for Windows
       if: ${{ matrix.os_family == 'windows' }}
       # Strip 'v' prefix of the tag
       run: |
-        $proto_tag=${{ github.ref_name }}
+        $proto_tag="${{ github.ref_name }}"
         echo "proto_version=${proto_tag#*v}" >> "$GITHUB_ENV"
 
     - name: Show version
