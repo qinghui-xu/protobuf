@@ -93,21 +93,19 @@ jobs:
     #       ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
     - name: Setup JDK
-      # if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/setup-java@v4.2.2
       with:
-        # java-version: 8
-        java-version: 21
+        java-version: 8
         distribution: temurin
 
     - name: Build Java lib
-      # if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        # ln -sfn ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
-        mv ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
+        ln -sfn ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
         cd ${{ github.workspace }}/java
         mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
-        mvn package -pl core -am -DskipTests -Dmaven.compiler.target=1.8 -Dmaven.compiler.release=1.8
+        mvn package -pl core -am -DskipTests
         mvn source:jar -pl core
         mkdir -p ${{ github.workspace }}/build/protobuf-java-lib
         cp pom.xml ${{ github.workspace }}/build/java-lib/protobuf-parent.${{ env.proto_version }}.pom
@@ -115,7 +113,7 @@ jobs:
         mv core/target/protobuf*.jar ${{ github.workspace }}/build/protobuf-java-lib/
 
     - name: Upload Java lib
-      # if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v4.3.6
       with:
         name: protobuf-java-lib
@@ -143,11 +141,11 @@ jobs:
         with:
           pattern: protoc-*
           path: ${{ github.workspace }}/download
-      - name: Download Java lib
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: protobuf-java-lib
-          path: ${{ github.workspace }}/download
+      # - name: Download Java lib
+      #   uses: actions/download-artifact@v4.1.8
+      #   with:
+      #     name: protobuf-java-lib
+      #     path: ${{ github.workspace }}/download
       - name: Package artifacts
         run: |
           ls -l download/*
