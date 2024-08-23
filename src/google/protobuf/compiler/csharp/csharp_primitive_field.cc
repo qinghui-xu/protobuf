@@ -143,6 +143,9 @@ void PrimitiveFieldGenerator::GenerateMembers(io::Printer* printer) {
       "    $name$_ = pb::ProtoPreconditions.CheckNotNull(value, \"value\");\n");
   }
   printer->Print(
+    variables_,
+    "    // @@protoc_insertion_point(message_field_modifier_scope:$containing_type_full_name$.set$property_name$)\n");
+  printer->Print(
     "  }\n"
     "}\n");
 

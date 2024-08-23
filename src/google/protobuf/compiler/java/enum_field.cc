@@ -184,6 +184,7 @@ void ImmutableEnumFieldGenerator::GenerateMembers(io::Printer* printer) const {
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public boolean "
                    "${$has$capitalized_name$$}$() {\n"
+                   "  // @@protoc_insertion_point(message_field_presence_checker_scope:$containing_type_full_name$.has$capitalized_name$)\n"
                    "  return $get_has_field_bit_message$;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -215,6 +216,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
     printer->Print(variables_,
                    "@java.lang.Override $deprecation$public boolean "
                    "${$has$capitalized_name$$}$() {\n"
+                   "  // @@protoc_insertion_point(builder_field_presence_checker_scope:$containing_type_full_name$.has$capitalized_name$)\n"
                    "  return $get_has_field_bit_builder$;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -235,6 +237,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  $name$_ = value;\n"
                    "  $set_has_field_bit_builder$\n"
                    "  onChanged();\n"
+                   "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.set$capitalized_name$Value)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -258,6 +261,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  $set_has_field_bit_builder$\n"
                  "  $name$_ = value.getNumber();\n"
                  "  onChanged();\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.set$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -269,6 +273,7 @@ void ImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  $clear_has_field_bit_builder$\n"
       "  $name$_ = $default_number$;\n"
       "  onChanged();\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -816,6 +821,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "  ensure$capitalized_name$IsMutable();\n"
                  "  $name$_.add(value.getNumber());\n"
                  "  onChanged();\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -829,6 +835,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                  "    $name$_.add(value.getNumber());\n"
                  "  }\n"
                  "  onChanged();\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$)\n"
                  "  return this;\n"
                  "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -840,6 +847,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
       "  $name$_ = java.util.Collections.emptyList();\n"
       "  $clear_mutable_bit_builder$;\n"
       "  onChanged();\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "  return this;\n"
       "}\n");
   printer->Annotate("{", "}", descriptor_);
@@ -881,6 +889,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
                    "  ensure$capitalized_name$IsMutable();\n"
                    "  $name$_.add(value);\n"
                    "  onChanged();\n"
+                   "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$Value)\n"
                    "  return this;\n"
                    "}\n");
     printer->Annotate("{", "}", descriptor_);
@@ -895,6 +904,7 @@ void RepeatedImmutableEnumFieldGenerator::GenerateBuilderMembers(
         "    $name$_.add(value);\n"
         "  }\n"
         "  onChanged();\n"
+        "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$Value)\n"
         "  return this;\n"
         "}\n");
     printer->Annotate("{", "}", descriptor_);

@@ -93,6 +93,7 @@ void FieldGeneratorBase::SetCommonFieldVariables(
 
   (*variables)["property_name"] = property_name();
   (*variables)["type_name"] = type_name();
+  (*variables)["containing_type_full_name"] = descriptor_->containing_type()->full_name();
   (*variables)["extended_type"] = GetClassName(descriptor_->containing_type());
   (*variables)["name"] = name();
   (*variables)["descriptor_name"] = descriptor_->name();

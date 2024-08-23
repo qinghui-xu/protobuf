@@ -1041,6 +1041,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(value);\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$)\n"
       "return this;\n");
 
   // Builder addRepeatedField(int index, Field value)
@@ -1059,6 +1060,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(index, value);\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addIndex$capitalized_name$)\n"
       "return this;\n");
 
   // Builder addRepeatedField(Field.Builder builderForValue)
@@ -1074,6 +1076,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(builderForValue.build());\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$Builder)\n"
       "return this;\n");
 
   // Builder addRepeatedField(int index, Field.Builder builderForValue)
@@ -1089,6 +1092,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addMessage(index, builderForValue.build());\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addIndex$capitalized_name$Builder)\n"
       "return this;\n");
 
   // Builder addAllRepeatedField(Iterable<Field> values)
@@ -1105,6 +1109,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.addAllMessages(values);\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addAll$capitalized_name$)\n"
       "return this;\n");
 
   // Builder clearRepeatedField()
@@ -1118,6 +1123,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.clear();\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.clear$capitalized_name$)\n"
       "return this;\n");
 
   // Builder removeRepeatedField(int index)
@@ -1132,6 +1138,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
 
       "$name$Builder_.remove(index);\n",
 
+      "// @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.removeIndex$capitalized_name$)\n"
       "return this;\n");
 
   // Field.Builder getRepeatedFieldBuilder(int index)
@@ -1177,6 +1184,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
   printer->Print(variables_,
                  "$deprecation$public $type$.Builder "
                  "${$add$capitalized_name$Builder$}$() {\n"
+                 "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.add$capitalized_name$DefaultBuilder)\n"
                  "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
                  "      $type$.getDefaultInstance());\n"
                  "}\n");
@@ -1188,6 +1196,7 @@ void RepeatedImmutableMessageFieldGenerator::GenerateBuilderMembers(
       variables_,
       "$deprecation$public $type$.Builder ${$add$capitalized_name$Builder$}$(\n"
       "    int index) {\n"
+      "  // @@protoc_insertion_point(builder_field_modifier_scope:$containing_type_full_name$.addIndex$capitalized_name$DefaultBuilder)\n"
       "  return get$capitalized_name$FieldBuilder().addBuilder(\n"
       "      index, $type$.getDefaultInstance());\n"
       "}\n");
