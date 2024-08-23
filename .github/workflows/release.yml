@@ -35,107 +35,88 @@ jobs:
             arch: x86_64
 
     steps:
-    - name: Parse version for Unix
-      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-      # Strip 'v' prefix of the tag
-      run: |
-        proto_tag="${{ github.ref_name }}"
-        echo "proto_version=${proto_tag#v}" >> "$GITHUB_ENV"
+      - name: Parse version for Unix
+        if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+        # Strip 'v' prefix of the tag
+        run: |
+          proto_tag="${{ github.ref_name }}"
+          echo "proto_version=${proto_tag#v}" >> "$GITHUB_ENV"
+  
+      - name: Parse version for Windows
+        if: ${{ matrix.os_family == 'windows' }}
+        # Strip 'v' prefix of the tag, noting that windows env variable is namespaced with `env:`
+        run: |
+          $proto_tag = "${{ github.ref_name }}"
+          $proto_version = $proto_tag.TrimStart("v")
+          echo "proto_version=$proto_version" >> "$env:GITHUB_ENV"
+  
+      - name: Checkout Protobuf
+        uses: actions/checkout@v4
+  
+      - name: Checkout submodule
+        run: git submodule update --init --recursive
+  
+      - name: Set protoc version for Unix
+        if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+        run: sed -i.bak 's/4\.22\.5/${{ env.proto_version }}/g' CMakeLists.txt
+  
+      - name: Set protoc version for Windows
+        if: ${{ matrix.os == 'windows-latest' }}
+        run: >
+          (Get-Content CMakeLists.txt) -replace '4.22.5', '${{ env.proto_version }}' | Set-Content CMakeLists.txt
+  
+      - name: Configure CMake
+        # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
+        # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
+        run: >
+          cmake -B ${{ github.workspace }}/build
+          -G "Unix Makefiles"
+          -DCMAKE_CXX_STANDARD=14
+          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+  
+      - name: Build protoc
+        run: cmake --build ${{ github.workspace }}/build
+  
+      - name: Create release artifacts directory for upload
+        run: mkdir ${{ github.workspace }}/build/release-artifacts
+  
+      - name: Rename protoc for Unix
+        if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+        run: |
+          mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+  
+      - name: Rename protoc for Windows
+        if: ${{ matrix.os_family == 'windows' }}
+        run: >
+          mv ${{ github.workspace }}/build/protoc.exe
+          ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+  
+      - name: Setup JDK
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        uses: actions/setup-java@v4.2.2
+        with:
+          java-version: 8
+          distribution: temurin
+  
+      - name: Build Java lib
+        if: ${{ matrix.os == 'ubuntu-latest' }}
+        run: |
+          ln -sfn ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
+          cd ${{ github.workspace }}/java
+          mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
+          mvn package -pl core -am -DskipTests
+          mvn source:jar -pl core
+          cp pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-parent.${{ env.proto_version }}.pom
+          cp core/pom.xml ${{ github.workspace }}/release-artifacts/protobuf-java-lib/protobuf-java.${{ env.proto_version }}.pom
+          mv core/target/protobuf*.jar ${{ github.workspace }}/build/release-artifacts/
+  
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4.3.6
+        with:
+          name: artifacts-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}
+          path: ${{ github.workspace }}/build/release-artifacts
+          retention-days: 7
 
-    - name: Parse version for Windows
-      if: ${{ matrix.os_family == 'windows' }}
-      # Strip 'v' prefix of the tag, noting that windows env variable is namespaced with `env:`
-      run: |
-        $proto_tag = "${{ github.ref_name }}"
-        $proto_version = $proto_tag.TrimStart("v")
-        echo "proto_version=$proto_version" >> "$env:GITHUB_ENV"
-
-    - name: Checkout Protobuf
-      uses: actions/checkout@v4
-
-    - name: Checkout submodule
-      run: git submodule update --init --recursive
-
-    - name: Set protoc version for Unix
-      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-      run: sed -i.bak 's/4\.22\.5/${{ env.proto_version }}/g' CMakeLists.txt
-
-    - name: Set protoc version for Windows
-      if: ${{ matrix.os == 'windows-latest' }}
-      run: >
-        (Get-Content CMakeLists.txt) -replace '4.22.5', '${{ env.proto_version }}' | Set-Content CMakeLists.txt
-
-    - name: Configure CMake
-      # Configure CMake in a 'build' subdirectory. `CMAKE_BUILD_TYPE` is only required if you are using a single-configuration generator such as make.
-      # See https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html?highlight=cmake_build_type
-      run: >
-        cmake -B ${{ github.workspace }}/build
-        -G "Unix Makefiles"
-        -DCMAKE_CXX_STANDARD=14
-        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
-    - name: Build protoc
-      run: cmake --build ${{ github.workspace }}/build
-
-    - name: Rename protoc for Unix
-      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-      run: |
-        mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-
-    - name: Rename protoc for Windows
-      if: ${{ matrix.os_family == 'windows' }}
-      run: >
-        mv ${{ github.workspace }}/build/protoc.exe
-        ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-
-    - name: Upload protoc
-      uses: actions/upload-artifact@v4.3.6
-      with:
-        name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}
-        path: ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-        retention-days: 7
-
-    # - name: Publish protoc
-    #   uses: softprops/action-gh-release@v2.0.8
-    #   with:
-    #     files: |
-    #       ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-
-    - name: Setup JDK
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      uses: actions/setup-java@v4.2.2
-      with:
-        java-version: 8
-        distribution: temurin
-
-    - name: Build Java lib
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      run: |
-        ln -sfn ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
-        cd ${{ github.workspace }}/java
-        mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
-        mvn package -pl core -am -DskipTests
-        mvn source:jar -pl core
-        mkdir -p ${{ github.workspace }}/build/protobuf-java-lib
-        cp pom.xml ${{ github.workspace }}/build/protobuf-java-lib/protobuf-parent.${{ env.proto_version }}.pom
-        cp core/pom.xml ${{ github.workspace }}/build/protobuf-java-lib/protobuf-java.${{ env.proto_version }}.pom
-        mv core/target/protobuf*.jar ${{ github.workspace }}/build/protobuf-java-lib/
-
-    - name: Upload Java lib
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      uses: actions/upload-artifact@v4.3.6
-      with:
-        name: protobuf-java-lib
-        path: ${{ github.workspace }}/build/protobuf-java-lib
-        retention-days: 7
-
-    - name: Publish Java lib
-      if: ${{ matrix.os == 'ubuntu-latest' }}
-      uses: softprops/action-gh-release@v2.0.8
-      with:
-        files: |
-          ${{ github.workspace }}/build/protobuf-*.pom
-          ${{ github.workspace }}/build/protobuf-*.jar
 
   publish-release-assets:
     needs: build-release-assets
@@ -144,21 +125,13 @@ jobs:
       - name: Create layout
         run: >
           mkdir protobuf-dist-${{ github.ref_name }}
-          mkdir download
-      - name: Download protoc
+      - name: Download artifacts
         uses: actions/download-artifact@v4.1.8
         with:
-          pattern: protoc-*
-          path: ${{ github.workspace }}/download
-      - name: Download Java lib
-        uses: actions/download-artifact@v4.1.8
-        with:
-          name: protobuf-java-lib
-          path: ${{ github.workspace }}/download
+          pattern: artifacts-*
+          path: ${{ github.workspace }}/protobuf-dist-${{ github.ref_name }}
       - name: Package artifacts
         run: |
-          ls -l download/*
-          mv download/*/* protobuf-dist-${{ github.ref_name }}/
           ls -l protobuf-dist-${{ github.ref_name }}/*
           chmod +x protobuf-dist-${{ github.ref_name }}/protoc-*.exe
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
