@@ -282,6 +282,7 @@
     <module>util</module>
     <module>kotlin</module>
     <module>kotlin-lite</module>
+    <module>protoc</module>
   </modules>
 
 </project>
