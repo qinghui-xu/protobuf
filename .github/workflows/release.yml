@@ -121,17 +121,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create layout
-        run: mkdir protobuf-dist-${{ github.ref_name }}
+        run: |
+          mkdir protobuf-dist-${{ github.ref_name }}
+          mkdir download
 
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.8
         with:
           pattern: artifacts-*
-          path: ${{ github.workspace }}/protobuf-dist-${{ github.ref_name }}
+          path: ${{ github.workspace }}/download
 
       - name: Package artifacts
         run: |
-          ls -l protobuf-dist-${{ github.ref_name }}
+          ls -l download/*
+          mv download/*/* protobuf-dist-${{ github.ref_name }}/
           chmod +x protobuf-dist-${{ github.ref_name }}/protoc-*.exe
           ls -l protobuf-dist-${{ github.ref_name }}
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
