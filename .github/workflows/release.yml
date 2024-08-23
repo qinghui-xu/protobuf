@@ -16,23 +16,23 @@ jobs:
       # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
       fail-fast: false
       matrix:
-        os: [macos-latest]
+        os: [macos-latest, ubuntu-latest, windows-latest]
         build_type: [Release]
         include:
-          # - os: ubuntu-latest
-          #   os_family: linux
-          #   arch: x86_64
+          - os: ubuntu-latest
+            os_family: linux
+            arch: x86_64
           # macos-latest image is aarch 64 based
           - os: macos-latest
             os_family: osx
             arch: aarch_64
           # macos-13 image is the most recent x86 based macos
-          # - os: macos-13
-          #   os_family: osx
-          #   arch: x86_64
-          # - os: windows-latest
-          #   os_family: windows
-          #   arch: x86_64
+          - os: macos-13
+            os_family: osx
+            arch: x86_64
+          - os: windows-latest
+            os_family: windows
+            arch: x86_64
 
     steps:
     - name: Parse version for Unix
@@ -141,16 +141,17 @@ jobs:
         with:
           pattern: protoc-*
           path: ${{ github.workspace }}/download
-      # - name: Download Java lib
-      #   uses: actions/download-artifact@v4.1.8
-      #   with:
-      #     name: protobuf-java-lib
-      #     path: ${{ github.workspace }}/download
+      - name: Download Java lib
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: protobuf-java-lib
+          path: ${{ github.workspace }}/download
       - name: Package artifacts
         run: |
           ls -l download/*
           mv download/*/* protobuf-dist-${{ github.ref_name }}/
           ls -l protobuf-dist-${{ github.ref_name }}/*
+          chmod +x protobuf-dist-${{ github.ref_name }}/protoc-*.exe
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
           tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
       - name: Publish artifact
