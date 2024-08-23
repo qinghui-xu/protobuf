@@ -103,7 +103,8 @@ jobs:
     - name: Build Java lib
       # if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
-        ln -sfn ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
+        # ln -sfn ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
+        mv ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
         cd ${{ github.workspace }}/java
         mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
         mvn package -pl core -am -DskipTests -Dmaven.compiler.target=1.8 -Dmaven.compiler.release=1.8
