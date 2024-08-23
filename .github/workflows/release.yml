@@ -96,7 +96,8 @@ jobs:
       # if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/setup-java@v4.2.2
       with:
-        java-version: 8
+        # java-version: 8
+        java-version: 21
         distribution: temurin
 
     - name: Build Java lib
@@ -105,7 +106,7 @@ jobs:
         ln -sfn ${{ github.workspace }}/build/protoc ${{ github.workspace }}/protoc
         cd ${{ github.workspace }}/java
         mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
-        mvn package -pl core -am -DskipTests
+        mvn package -pl core -am -DskipTests -Dmaven.compiler.target=1.8 -Dmaven.compiler.release=1.8
         mvn source:jar -pl core
         mkdir -p ${{ github.workspace }}/build/protobuf-java-lib
         cp pom.xml ${{ github.workspace }}/build/java-lib/protobuf-parent.${{ env.proto_version }}.pom
