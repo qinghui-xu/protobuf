@@ -108,8 +108,8 @@ jobs:
         mvn package -pl core -am -DskipTests
         mvn source:jar -pl core
         mkdir -p ${{ github.workspace }}/build/protobuf-java-lib
-        cp pom.xml ${{ github.workspace }}/build/java-lib/protobuf-parent.${{ env.proto_version }}.pom
-        cp core/pom.xml ${{ github.workspace }}/build/java-lib/protobuf-java.${{ env.proto_version }}.pom
+        cp pom.xml ${{ github.workspace }}/build/protobuf-java-lib/protobuf-parent.${{ env.proto_version }}.pom
+        cp core/pom.xml ${{ github.workspace }}/build/protobuf-java-lib/protobuf-java.${{ env.proto_version }}.pom
         mv core/target/protobuf*.jar ${{ github.workspace }}/build/protobuf-java-lib/
 
     - name: Upload Java lib
