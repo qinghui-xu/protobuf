@@ -49,7 +49,7 @@ jobs:
         $proto_tag = "${{ github.ref_name }}"
         $proto_version = $proto_tag.TrimStart("v")
         echo "proto_version=$proto_version" >> "$env:GITHUB_ENV"
-    
+
     - name: Checkout Protobuf
       uses: actions/checkout@v4
 
