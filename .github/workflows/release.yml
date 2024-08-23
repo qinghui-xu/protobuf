@@ -107,7 +107,7 @@ jobs:
           mvn package -pl core -am -DskipTests
           mvn source:jar -pl core
           cp pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-parent.${{ env.proto_version }}.pom
-          cp core/pom.xml ${{ github.workspace }}/release-artifacts/protobuf-java-lib/protobuf-java.${{ env.proto_version }}.pom
+          cp core/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java.${{ env.proto_version }}.pom
           mv core/target/protobuf*.jar ${{ github.workspace }}/build/release-artifacts/
   
       - name: Upload release artifacts
@@ -123,23 +123,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create layout
-        run: >
-          mkdir protobuf-dist-${{ github.ref_name }}
+        run: mkdir protobuf-dist-${{ github.ref_name }}
+
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.8
         with:
           pattern: artifacts-*
           path: ${{ github.workspace }}/protobuf-dist-${{ github.ref_name }}
+
       - name: Package artifacts
         run: |
-          ls -l protobuf-dist-${{ github.ref_name }}/*
           chmod +x protobuf-dist-${{ github.ref_name }}/protoc-*.exe
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
-          tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
+
       - name: Publish artifact
         uses: softprops/action-gh-release@v2.0.8
         with:
           files: |
             protobuf-dist-${{ github.ref_name }}.tar.gz
-        
-      
