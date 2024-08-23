@@ -5,7 +5,7 @@ run-name: Release ${{github.ref_name}}
 
 on:
   push:
-    tags: ['v*-criteo']
+    tags: ['v*-criteo']  
 
 jobs:
 
@@ -107,9 +107,17 @@ jobs:
         mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
         mvn package -pl core -am -DskipTests
         mvn source:jar -pl core
-        cp pom.xml ${{ github.workspace }}/build/protobuf-parent.${{ env.proto_version }}.pom
-        cp core/pom.xml ${{ github.workspace }}/build/protobuf-java.${{ env.proto_version }}.pom
-        mv core/target/protobuf*.jar ${{ github.workspace }}/build/
+        mkdir -p ${{ github.workspace }}/build/protobuf-java-lib
+        cp pom.xml ${{ github.workspace }}/build/java-lib/protobuf-parent.${{ env.proto_version }}.pom
+        cp core/pom.xml ${{ github.workspace }}/build/java-lib/protobuf-java.${{ env.proto_version }}.pom
+        mv core/target/protobuf*.jar ${{ github.workspace }}/build/protobuf-java-lib/
+
+    - name: Upload Java lib
+      uses: actions/upload-artifact@v4.3.6
+      with:
+        name: protobuf-java-lib
+        path: ${{ github.workspace }}/build/java-lib
+        retention-days: 7
 
     - name: Publish Java lib
       if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -132,10 +140,15 @@ jobs:
         with:
           pattern: protoc-*
           path: ${{ github.workspace }}/download
+      - name: Download Java lib
+        uses: actions/download-artifact@v4.1.8
+        with:
+          name: protobuf-java-lib
+          path: ${{ github.workspace }}/download
       - name: Package artifacts
         run: |
           ls -l download/*
-          mv download/protoc-*/protoc-*.exe protobuf-dist-${{ github.ref_name }}
+          mv download/*/* protobuf-dist-${{ github.ref_name }}/
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
           tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
       - name: Publish artifact
