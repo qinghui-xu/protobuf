@@ -68,10 +68,10 @@ jobs:
     - name: Build protoc
       run: cmake --build ${{ github.workspace }}/build
 
-    # - name: Rename protoc for Unix
-    #   if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
-    #   run: |
-    #     mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+    - name: Rename protoc for Unix
+      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
+      run: |
+        mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
     - name: Rename protoc for Windows
       if: ${{ matrix.os_family == 'windows' }}
@@ -79,21 +79,12 @@ jobs:
         mv ${{ github.workspace }}/build/protoc.exe
         ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    - name: Upload protoc for Unix
+    - name: Upload protoc
       uses: actions/upload-artifact@v4.3.6
       with:
-        name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-        path: ${{ github.workspace }}/build/protoc
+        name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}
+        path: ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
         retention-days: 7
-        compression-level: 0
-
-    - name: Upload protoc for Windows
-      uses: actions/upload-artifact@v4.3.6
-      with:
-        name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
-        path: ${{ github.workspace }}/build/protoc.exe
-        retention-days: 7
-        compression-level: 0
 
     # - name: Publish protoc
     #   uses: softprops/action-gh-release@v2.0.8
@@ -135,14 +126,16 @@ jobs:
       - name: Create layout
         run: >
           mkdir protobuf-dist-${{ github.ref_name }}
+          mkdir download
       - name: Download protoc
         uses: actions/download-artifact@v4.1.8
         with:
-          pattern: protoc-*.exe
-          path: ${{ github.workspace }}/protobuf-dist-${{ github.ref_name }}
-      - name: List
+          pattern: protoc-*
+          path: ${{ github.workspace }}/download
+      - name: Package artifacts
         run: |
-          ls -l protobuf-dist-${{ github.ref_name }}
+          ls -l download/*
+          mv download/protoc-*/protoc-*.exe protobuf-dist-${{ github.ref_name }}
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
           tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
       - name: Publish artifact
