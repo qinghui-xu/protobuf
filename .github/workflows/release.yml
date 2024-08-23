@@ -8,7 +8,8 @@ on:
     tags: ['v*-criteo']
 
 jobs:
-  build:
+
+  build-release-assets:
     runs-on: ${{ matrix.os }}
 
     strategy:
@@ -86,13 +87,21 @@ jobs:
         retention-days: 7
         compression-level: 0
 
+    - name: Upload protoc for Windows
+      uses: actions/upload-artifact@v4.3.6
+      with:
+        name: protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
+        path: ${{ github.workspace }}/build/protoc.exe
+        retention-days: 7
+        compression-level: 0
+
     # - name: Publish protoc
     #   uses: softprops/action-gh-release@v2.0.8
     #   with:
     #     files: |
     #       ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
-    - name: Setup Java JDK
+    - name: Setup JDK
       if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/setup-java@v4.2.2
       with:
@@ -118,3 +127,28 @@ jobs:
         files: |
           ${{ github.workspace }}/build/protobuf-*.pom
           ${{ github.workspace }}/build/protobuf-*.jar
+
+  publish-release-assets:
+    needs: build-release-assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create layout
+        run: >
+          mkdir protobuf-dist-${{ github.ref_name }}
+      - name: Download protoc
+        uses: actions/download-artifact@v4.1.8
+        with:
+          pattern: protoc-*.exe
+          path: ${{ github.workspace }}/protobuf-dist-${{ github.ref_name }}
+      - name: List
+        run: |
+          ls -l protobuf-dist-${{ github.ref_name }}
+          tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz github.ref_name
+          tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
+      - name: Publish artifact
+        uses: softprops/action-gh-release@v2.0.8
+        with:
+          files: |
+            protobuf-dist-${{ github.ref_name }}.tar.gz
+        
+      
