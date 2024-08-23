@@ -93,14 +93,14 @@ jobs:
     #       ${{ github.workspace }}/build/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe
 
     - name: Setup JDK
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      # if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/setup-java@v4.2.2
       with:
         java-version: 8
         distribution: temurin
 
     - name: Build Java lib
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      # if: ${{ matrix.os == 'ubuntu-latest' }}
       run: |
         ln -sfn ${{ github.workspace }}/build/protoc ${{ github.workspace }}/protoc
         cd ${{ github.workspace }}/java
@@ -113,6 +113,7 @@ jobs:
         mv core/target/protobuf*.jar ${{ github.workspace }}/build/protobuf-java-lib/
 
     - name: Upload Java lib
+      # if: ${{ matrix.os == 'ubuntu-latest' }}
       uses: actions/upload-artifact@v4.3.6
       with:
         name: protobuf-java-lib
@@ -149,6 +150,7 @@ jobs:
         run: |
           ls -l download/*
           mv download/*/* protobuf-dist-${{ github.ref_name }}/
+          ls -l protobuf-dist-${{ github.ref_name }}/*
           tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
           tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
       - name: Publish artifact
