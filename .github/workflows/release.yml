@@ -101,14 +101,15 @@ jobs:
         run: |
           ln -sfn ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
           cd ${{ github.workspace }}/java
-          mvn versions:set -DnewVersion="${{ env.proto_version }}" -DprocessAllModules=true
+          mvn versions:set -DnewVersion=${{ env.proto_version }} -DprocessAllModules=true
           mvn package -pl core -am -DskipTests
           mvn source:jar -pl core
           cp pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-parent.${{ env.proto_version }}.pom
           cp core/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java.${{ env.proto_version }}.pom
+          cp protoc/pom.xml ${{ github.workspace }}/build/release-artifacts/protoc.${{ env.proto_version }}.pom
           mv core/target/protobuf*.jar ${{ github.workspace }}/build/release-artifacts/
 
-      - name: Upload release artifacts
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4.3.6
         with:
           name: artifacts-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}
@@ -120,10 +121,13 @@ jobs:
     needs: build-release-assets
     runs-on: ubuntu-latest
     steps:
-      - name: Create layout
+      - name: Prepare environment
         run: |
-          mkdir protobuf-dist-${{ github.ref_name }}
+          proto_tag="${{ github.ref_name }}"
+          proto_version=${proto_tag#v}
+          mkdir protobuf-dist-$proto_version
           mkdir download
+          echo "proto_version=$proto_version" >> "$GITHUB_ENV"
 
       - name: Download artifacts
         uses: actions/download-artifact@v4.1.8
@@ -134,15 +138,14 @@ jobs:
       - name: Package artifacts
         run: |
           ls -l download/*
-          mv download/*/* protobuf-dist-${{ github.ref_name }}/
-          chmod +x protobuf-dist-${{ github.ref_name }}/protoc-*.exe
-          ls -l protobuf-dist-${{ github.ref_name }}
-          tar -czf protobuf-dist-${{ github.ref_name }}.tar.gz protobuf-dist-${{ github.ref_name }}
-          tar -tf protobuf-dist-${{ github.ref_name }}.tar.gz
+          mv download/*/* protobuf-dist-${{ env.proto_version }}/
+          chmod +x protobuf-dist-${{ env.proto_version }}/protoc-*.exe
+          ls -l protobuf-dist-${{ env.proto_version }}/
+          tar -czf protobuf-dist-${{ env.proto_version }}.tar.gz protobuf-dist-${{ env.proto_version }}
 
       - name: Publish artifact
         uses: softprops/action-gh-release@v2.0.8
         with:
           files: |
-            protobuf-dist-${{ github.ref_name }}.tar.gz
+            protobuf-dist-${{ env.proto_version }}.tar.gz
 
