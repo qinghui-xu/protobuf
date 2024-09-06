@@ -102,12 +102,14 @@ jobs:
           ln -sfn ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}-${{ matrix.os_family }}-${{ matrix.arch }}.exe ${{ github.workspace }}/protoc
           cd ${{ github.workspace }}/java
           mvn versions:set -DnewVersion=${{ env.proto_version }} -DprocessAllModules=true
-          mvn package -pl core -am -DskipTests
-          mvn source:jar -pl core
+          mvn package -pl core,util -am -DskipTests
+          mvn source:jar -pl core,util
           cp pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-parent-${{ env.proto_version }}.pom
           cp core/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java-${{ env.proto_version }}.pom
+          cp util/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java-util-${{ env.proto_version }}.pom
           cp protoc/pom.xml ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}.pom
           mv core/target/protobuf*.jar ${{ github.workspace }}/build/release-artifacts/
+          mv util/target/protobuf*.jar ${{ github.workspace }}/build/release-artifacts/
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4.3.6
