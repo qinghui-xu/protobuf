@@ -105,6 +105,7 @@ jobs:
           mvn package -pl core,util -am -DskipTests
           mvn source:jar -pl core,util
           cp pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-parent-${{ env.proto_version }}.pom
+          cp bom/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-bom-${{ env.proto_version }}.pom
           cp core/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java-${{ env.proto_version }}.pom
           cp util/pom.xml ${{ github.workspace }}/build/release-artifacts/protobuf-java-util-${{ env.proto_version }}.pom
           cp protoc/pom.xml ${{ github.workspace }}/build/release-artifacts/protoc-${{ env.proto_version }}.pom
