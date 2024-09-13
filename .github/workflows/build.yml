@@ -1,0 +1,36 @@
+# This starter workflow is for a CMake project running on multiple platforms. There is a different starter workflow if you just want a single platform.
+# See: https://github.com/actions/starter-workflows/blob/main/ci/cmake-single-platform.yml
+name: CMake on multiple platforms
+
+on:
+  workflow_dispatch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        ref: criteo_release_protobuf_bom
+
+    - name: Checkout submodule
+      run: git submodule update --init --recursive
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ github.workspace }}/build
+        -G "Unix Makefiles"
+        -DBUILD_SHARED_LIBS=0
+        -DCMAKE_CXX_STANDARD=14
+        -DCMAKE_BUILD_TYPE=Release
+
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --build ${{ steps.strings.outputs.build-output-dir }}
+
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4.3.6
+      with:
+        name: protoc
+        path: ${{ github.workspace }}/build/protoc-22.5.0
+        retention-days: 7
