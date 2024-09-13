@@ -26,7 +26,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
 
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --build ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --build ${{ github.workspace }}/build
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.3.6
