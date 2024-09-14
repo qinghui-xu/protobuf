@@ -21,7 +21,7 @@ jobs:
       run: >
         cmake -B ${{ github.workspace }}/build
         -G "Unix Makefiles"
-        -DBUILD_SHARED_LIBS=0
+        -Dprotobuf_BUILD_SHARED_LIBS=OFF
         -DCMAKE_CXX_STANDARD=14
         -DCMAKE_BUILD_TYPE=Release
 
