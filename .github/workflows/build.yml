@@ -7,7 +7,28 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        build_type: [Release]
+        include:
+          - os: ubuntu-latest
+            os_family: linux
+            arch: x86_64
+          # macos-latest image is arm64 based
+          - os: macos-latest
+            os_family: osx
+            arch: aarch_64
+          # macos-13 image is the most recent x86 based macos
+          - os: macos-13
+            os_family: osx
+            arch: x86_64
+          - os: windows-latest
+            os_family: windows
+            arch: x86_64
+  
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v4
@@ -16,11 +37,6 @@ jobs:
 
     - name: Checkout submodule
       run: git submodule update --init --recursive
-
-    - name: Env check
-      run: |
-        cmake --version
-        ls -l /usr/lib/x86_64-linux-gnu
 
     - name: Configure CMake
       run: >
@@ -36,11 +52,12 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
 
     - name: Rename
+      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }
       run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
 
     - name: Upload artifacts
       uses: actions/upload-artifact@v4.3.6
       with:
-        name: protoc
+        name: protoc-${{ matrix.os_family }}-${{ matrix.arch }}
         path: ${{ github.workspace }}/build/protoc.exe
         retention-days: 7
