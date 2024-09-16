@@ -52,7 +52,7 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
 
     - name: Rename
-      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }
+      if: ${{ matrix.os_family == 'linux' || matrix.os_family == 'osx' }}
       run: mv $(readlink -f ${{ github.workspace }}/build/protoc) ${{ github.workspace }}/build/protoc.exe
 
     - name: Upload artifacts
