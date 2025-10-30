@@ -26,6 +26,9 @@
 #include "google/protobuf/compiler/cpp/options.h"
 #include "google/protobuf/descriptor.h"
 
+// Must be included last.
+#include "google/protobuf/port_def.inc"
+
 namespace google {
 namespace protobuf {
 namespace compiler {
@@ -39,7 +42,7 @@ void SetCordVariables(
       "\"", absl::CEscape(descriptor->default_value_string()), "\"");
   (*variables)["default_length"] =
       absl::StrCat(descriptor->default_value_string().length());
-  (*variables)["full_name"] = descriptor->full_name();
+  (*variables)["full_name"] = std::string(descriptor->full_name());
   // For one of Cords
   (*variables)["default_variable_name"] = MakeDefaultName(descriptor);
   (*variables)["default_variable_field"] = MakeDefaultFieldName(descriptor);
@@ -64,7 +67,6 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override;
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   void GenerateSerializeWithCachedSizesToArray(
       io::Printer* printer) const override;
@@ -103,7 +105,7 @@ class CordFieldGenerator : public FieldGeneratorBase {
   void GenerateOneofCopyConstruct(io::Printer* p) const override {
     auto vars = p->WithVars(variables_);
     p->Emit(R"cc(
-      $field$ = ::$proto_ns$::Arena::Create<absl::Cord>(arena, *from.$field$);
+      $field$ = $pb$::Arena::Create<absl::Cord>(arena, *from.$field$);
     )cc");
   }
 };
@@ -123,7 +125,6 @@ class CordOneofFieldGenerator : public CordFieldGenerator {
   void GenerateClearingCode(io::Printer* printer) const override;
   void GenerateSwappingCode(io::Printer* printer) const override;
   void GenerateMergingCode(io::Printer* printer) const override;
-  void GenerateConstructorCode(io::Printer* printer) const override {}
   void GenerateArenaDestructorCode(io::Printer* printer) const override;
   // Overrides CordFieldGenerator behavior.
   ArenaDtorNeeds NeedsArenaDestructor() const override {
@@ -165,7 +166,7 @@ void CordFieldGenerator::GenerateAccessorDeclarations(
       "private:\n"
       "const ::absl::Cord& ${1$_internal_$name$$}$() const;\n"
       "void ${1$_internal_set_$name$$}$(const ::absl::Cord& value);\n"
-      "::absl::Cord* ${1$_internal_mutable_$name$$}$();\n"
+      "::absl::Cord* $nonnull$ ${1$_internal_mutable_$name$$}$();\n"
       "public:\n",
       field_);
 }
@@ -214,7 +215,8 @@ void CordFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* $nonnull$
+    $classname$::_internal_mutable_$name_internal$() {
       $set_hasbit$;
       return &$field$;
     }
@@ -239,15 +241,6 @@ void CordFieldGenerator::GenerateSwappingCode(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format("$field$.swap(other->$field$);\n");
 }
-
-void CordFieldGenerator::GenerateConstructorCode(io::Printer* printer) const {
-  ABSL_CHECK(!should_split());
-  Formatter format(printer, variables_);
-  if (!field_->default_value_string().empty()) {
-    format("$field$ = ::absl::string_view($default$, $default_length$);\n");
-  }
-}
-
 
 void CordFieldGenerator::GenerateArenaDestructorCode(
     io::Printer* printer) const {
@@ -275,9 +268,10 @@ void CordFieldGenerator::GenerateByteSize(io::Printer* printer) const {
   Formatter format(printer, variables_);
   format(
       "total_size += $tag_size$ +\n"
-      "  ::$proto_ns$::internal::WireFormatLite::$declared_type$Size(\n"
+      "  $pbi$::WireFormatLite::$declared_type$Size(\n"
       "    this_._internal_$name$());\n");
 }
+
 
 void CordFieldGenerator::GenerateConstexprAggregateInitializer(
     io::Printer* p) const {
@@ -317,7 +311,7 @@ CordOneofFieldGenerator::CordOneofFieldGenerator(
 void CordOneofFieldGenerator::GeneratePrivateMembers(
     io::Printer* printer) const {
   Formatter format(printer, variables_);
-  format("::absl::Cord *$name$_;\n");
+  format("::absl::Cord* $nonnull$ $name$_;\n");
 }
 
 void CordOneofFieldGenerator::GenerateStaticMembers(
@@ -361,7 +355,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name_internal$();
         $field$ = new ::absl::Cord;
-        ::$proto_ns$::Arena* arena = GetArena();
+        $pb$::Arena* arena = GetArena();
         if (arena != nullptr) {
           arena->Own($field$);
         }
@@ -378,7 +372,7 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
         clear_$oneof_name$();
         set_has_$name_internal$();
         $field$ = new ::absl::Cord;
-        ::$proto_ns$::Arena* arena = GetArena();
+        $pb$::Arena* arena = GetArena();
         if (arena != nullptr) {
           arena->Own($field$);
         }
@@ -389,12 +383,13 @@ void CordOneofFieldGenerator::GenerateInlineAccessorDefinitions(
     }
   )cc");
   printer->Emit(R"cc(
-    inline ::absl::Cord* $classname$::_internal_mutable_$name_internal$() {
+    inline ::absl::Cord* $nonnull$
+    $classname$::_internal_mutable_$name_internal$() {
       if ($not_has_field$) {
         clear_$oneof_name$();
         set_has_$name_internal$();
         $field$ = new ::absl::Cord;
-        ::$proto_ns$::Arena* arena = GetArena();
+        $pb$::Arena* arena = GetArena();
         if (arena != nullptr) {
           arena->Own($field$);
         }
@@ -445,7 +440,7 @@ void CordOneofFieldGenerator::GenerateArenaDestructorCode(
 void CordOneofFieldGenerator::GenerateMergingCode(io::Printer* printer) const {
   printer->Emit(R"cc(
     if (oneof_needs_init) {
-      _this->$field$ = ::$proto_ns$::Arena::Create<absl::Cord>(arena);
+      _this->$field$ = $pb$::Arena::Create<absl::Cord>(arena);
     }
     *_this->$field$ = *from.$field$;
   )cc");
@@ -471,3 +466,5 @@ std::unique_ptr<FieldGeneratorBase> MakeOneofCordGenerator(
 }  // namespace compiler
 }  // namespace protobuf
 }  // namespace google
+
+#include "google/protobuf/port_undef.inc"

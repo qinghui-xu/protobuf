@@ -14,8 +14,13 @@ _PROTO_BAZEL_FEATURES = """bazel_features = struct(
   proto = struct(
     starlark_proto_info = {starlark_proto_info},
   ),
+  rules = struct(
+    analysis_tests_can_transition_on_experimental_incompatible_flags = {analysis_tests_can_transition_on_experimental_incompatible_flags},
+  ),
   globals = struct(
     PackageSpecificationInfo = {PackageSpecificationInfo},
+    ProtoInfo = getattr(getattr(native, 'legacy_globals', None), 'ProtoInfo', {ProtoInfo}),
+    cc_proto_aspect = getattr(getattr(native, 'legacy_globals', None), 'cc_proto_aspect', {cc_proto_aspect}),
   ),
 )
 """
@@ -33,6 +38,8 @@ def _proto_bazel_features_impl(rctx):
     PackageSpecificationInfo = major_version_int > 6 or (major_version_int == 6 and minor_version_int >= 4)
 
     protobuf_on_allowlist = major_version_int > 7
+    ProtoInfo = "ProtoInfo" if major_version_int < 8 else "None"
+    cc_proto_aspect = "cc_proto_aspect" if major_version_int < 8 else "None"
 
     rctx.file("BUILD.bazel", """
 load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
@@ -47,6 +54,10 @@ exports_files(["features.bzl"])
         starlark_proto_info = repr(starlark_proto_info),
         PackageSpecificationInfo = "PackageSpecificationInfo" if PackageSpecificationInfo else "None",
         protobuf_on_allowlist = repr(protobuf_on_allowlist),
+        ProtoInfo = ProtoInfo,
+        cc_proto_aspect = cc_proto_aspect,
+        analysis_tests_can_transition_on_experimental_incompatible_flags =
+            "True" if major_version_int > 8 or (major_version_int == 8 and minor_version_int >= 2) else "False",
     ))
 
 proto_bazel_features = repository_rule(

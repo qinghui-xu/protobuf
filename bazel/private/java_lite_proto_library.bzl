@@ -16,8 +16,7 @@ load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
 _PROTO_TOOLCHAIN_ATTR = "_aspect_proto_toolchain_for_javalite"
 
-# TODO: replace with toolchain type located in protobuf
-_JAVA_LITE_PROTO_TOOLCHAIN = "@rules_java//java/proto:lite_toolchain_type"
+_JAVA_LITE_PROTO_TOOLCHAIN = Label("//bazel/private:javalite_toolchain_type")
 
 def _aspect_impl(target, ctx):
     """Generates and compiles Java code for a proto_library dependency graph.
@@ -96,7 +95,6 @@ def _rule_impl(ctx):
     Returns:
       ([JavaInfo, DefaultInfo, OutputGroupInfo, ProguardSpecInfo])
     """
-
     proto_toolchain_info = toolchains.find_toolchain(
         ctx,
         "_aspect_proto_toolchain_for_javalite",
@@ -110,7 +108,7 @@ def _rule_impl(ctx):
     if runtime:
         proguard_provider_specs = runtime[ProguardSpecInfo]
     else:
-        proguard_provider_specs = ProguardSpecInfo(specs = depset())
+        proguard_provider_specs = ProguardSpecInfo(depset())
 
     java_info = java_info_merge_for_protos([dep[JavaInfo] for dep in ctx.attr.deps], merge_java_outputs = False)
 
@@ -177,3 +175,6 @@ rules to generate Java code for.
     provides = [JavaInfo],
     toolchains = toolchains.use_toolchain(_JAVA_LITE_PROTO_TOOLCHAIN),
 )
+
+# public re-export, note that we can't rename the original symbol because that changes the aspect id
+java_lite_proto_aspect = _java_lite_proto_aspect

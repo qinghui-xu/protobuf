@@ -5,10 +5,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-//! Kernel-agnostic logic for the Rust Protobuf Runtime.
-//!
-//! For kernel-specific logic this crate delegates to the respective `__runtime`
-//! crate.
 #![deny(unsafe_op_in_unsafe_fn)]
 
 use std::fmt;
@@ -18,51 +14,46 @@ use std::fmt;
 // This problem is referred to as "perfect derive".
 // https://smallcultfollowing.com/babysteps/blog/2022/04/12/implied-bounds-and-perfect-derive/
 
-/// Everything in `__public` is re-exported in `protobuf.rs`.
-/// These are the items protobuf users can access directly.
-#[doc(hidden)]
-pub mod __public {
-    pub use crate::codegen_traits::{
-        create::Parse,
-        interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
-        read::Serialize,
-        write::{Clear, ClearAndParse, MergeFrom},
-        Message, MessageMut, MessageView,
-    };
-    pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
-    pub use crate::r#enum::{Enum, UnknownEnumValue};
-    pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
-    pub use crate::optional::Optional;
-    pub use crate::proto;
-    pub use crate::proxied::{
-        AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, MutProxy, Proxied, Proxy,
-        View, ViewProxy,
-    };
-    pub use crate::repeated::{
-        ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView,
-    };
-    pub use crate::string::{ProtoBytes, ProtoStr, ProtoString};
-    pub use crate::{ParseError, SerializeError};
-}
-pub use __public::*;
+pub use crate::__internal::runtime::message_eq;
+#[cfg(all(cpp_kernel, not(lite_runtime)))]
+pub use crate::codegen_traits::interop::MessageDescriptorInterop;
+pub use crate::codegen_traits::{
+    create::Parse,
+    interop::{MessageMutInterop, MessageViewInterop, OwnedMessageInterop},
+    read::Serialize,
+    write::{Clear, ClearAndParse, CopyFrom, MergeFrom, TakeFrom},
+    Message, MessageMut, MessageView,
+};
+pub use crate::cord::{ProtoBytesCow, ProtoStringCow};
+pub use crate::map::{Map, MapIter, MapMut, MapView, ProxiedInMapValue};
+pub use crate::optional::Optional;
+pub use crate::proxied::{
+    AsMut, AsView, IntoMut, IntoProxied, IntoView, Mut, MutProxied, Proxied, View,
+};
+pub use crate::r#enum::{Enum, UnknownEnumValue};
+pub use crate::repeated::{ProxiedInRepeated, Repeated, RepeatedIter, RepeatedMut, RepeatedView};
+pub use crate::string::{ProtoBytes, ProtoStr, ProtoString, Utf8Error};
+pub use protobuf_macros::proto_proc as proto;
 
 pub mod prelude;
 
-/// Everything in `__internal` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
+/// The `__internal` module is for necessary encapsulation breaks between
+/// generated code and the runtime.
+///
+/// These symbols are never intended to be used by application code under any
+/// circumstances.
+///
+/// In blaze/bazel builds, this symbol is actively hidden from application
+/// code by having a shim crate in front that does not re-export this symbol,
+/// and a different BUILD visibility-restricted target that is used by the
+/// generated code.
+///
+/// In Cargo builds we have no good way to technically hide this
+/// symbol while still allowing it from codegen, so it is only by private by
+/// convention. As application code should never use this module, anything
+/// changes under `__internal` is not considered a semver breaking change.
 #[path = "internal.rs"]
 pub mod __internal;
-
-/// Everything in `__runtime` is allowed to change without it being considered
-/// a breaking change for the protobuf library. Nothing in here should be
-/// exported in `protobuf.rs`.
-#[cfg(all(bzl, cpp_kernel))]
-#[path = "cpp.rs"]
-pub mod __runtime;
-#[cfg(any(not(bzl), upb_kernel))]
-#[path = "upb.rs"]
-pub mod __runtime;
 
 mod codegen_traits;
 mod cord;
@@ -71,7 +62,6 @@ mod r#enum;
 mod map;
 mod optional;
 mod primitive;
-mod proto_macro;
 mod proxied;
 mod repeated;
 mod string;
@@ -90,8 +80,8 @@ use utf8;
 
 // If the Upb and C++ kernels are both linked into the same binary, this symbol
 // will be defined twice and cause a link error.
-#[no_mangle]
-extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
+#[unsafe(no_mangle)]
+unsafe extern "C" fn __Disallow_Upb_And_Cpp_In_Same_Binary() {}
 
 /// An error that happened during parsing.
 #[derive(Debug, Clone)]
@@ -115,11 +105,4 @@ impl fmt::Display for SerializeError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "Couldn't serialize proto into bytes (depth too deep or missing required fields)")
     }
-}
-
-pub fn get_repeated_default_value<T: repeated::ProxiedInRepeated + Default>(
-    _: __internal::Private,
-    _: repeated::RepeatedView<'_, T>,
-) -> T {
-    Default::default()
 }

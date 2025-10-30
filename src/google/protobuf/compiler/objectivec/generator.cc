@@ -64,8 +64,6 @@ std::string NumberedObjCMFileName(absl::string_view basename, int number) {
 
 }  // namespace
 
-bool ObjectiveCGenerator::HasGenerateAll() const { return true; }
-
 bool ObjectiveCGenerator::Generate(const FileDescriptor* file,
                                    const std::string& parameter,
                                    GeneratorContext* context,
@@ -296,6 +294,10 @@ bool ObjectiveCGenerator::GenerateAll(
             options[i].second);
         return false;
       }
+    } else if (options[i].first == "annotation_pragma_name") {
+      generation_options.annotation_pragma_name = options[i].second;
+    } else if (options[i].first == "annotation_guard_name") {
+      generation_options.annotation_guard_name = options[i].second;
     } else {
       *error =
           absl::StrCat("error: Unknown generator option: ", options[i].first);
@@ -342,17 +344,6 @@ bool ObjectiveCGenerator::GenerateAll(
               << std::endl;
     std::cerr.flush();
   }
-  if (!generation_options.generate_minimal_imports &&
-      !absl::StrContains(options_warnings_suppressions,
-                         "generate_minimal_imports")) {
-    std::cerr << "WARNING: generate_minimal_imports is disabled, this is "
-                 "deprecated and will be removed in the future. If you have a "
-                 "need for disabling it please file an issue at "
-                 "https://github.com/protocolbuffers/protobuf/issues with "
-                 "your use case."
-              << std::endl;
-    std::cerr.flush();
-  }
   if (!generation_options.strip_custom_options &&
       !absl::StrContains(options_warnings_suppressions,
                          "strip_custom_options")) {
@@ -386,6 +377,19 @@ bool ObjectiveCGenerator::GenerateAll(
 
   // -----------------------------------------------------------------
 
+  if (generation_options.annotation_guard_name.empty() !=
+      generation_options.annotation_pragma_name.empty()) {
+    *error =
+        "error: both annotation_guard_name and annotation_pragma_name must "
+        "be set to output annotations";
+    return false;
+  }
+  bool should_annotate_headers =
+      !generation_options.annotation_pragma_name.empty() &&
+      !generation_options.annotation_guard_name.empty();
+
+  // -----------------------------------------------------------------
+
   // Validate the objc prefix/package pairings.
   if (!ValidateObjCClassPrefixes(files, validation_options, error)) {
     // *error will have been filled in.
@@ -402,12 +406,30 @@ bool ObjectiveCGenerator::GenerateAll(
     {
       auto output =
           absl::WrapUnique(context->Open(absl::StrCat(filepath, ".pbobjc.h")));
-      io::Printer printer(output.get());
-      file_generator.GenerateHeader(&printer);
+      GeneratedCodeInfo annotations;
+      io::AnnotationProtoCollector<GeneratedCodeInfo> annotation_collector(
+          &annotations);
+      io::Printer::Options options;
+      std::string info_path = "";
+      if (should_annotate_headers) {
+        info_path = absl::StrCat(filepath, ".pbobjc.h.meta");
+        options.annotation_collector = &annotation_collector;
+      }
+      io::Printer printer(output.get(), options);
+      file_generator.GenerateHeader(&printer, info_path);
       if (printer.failed()) {
         *error = absl::StrCat("error: internal error generating a header: ",
                               file->name());
         return false;
+      }
+
+      if (should_annotate_headers) {
+        auto info_output = absl::WrapUnique(context->Open(info_path));
+        if (!annotations.SerializeToZeroCopyStream(info_output.get())) {
+          *error = absl::StrCat("error: internal error writing annotations: ",
+                                info_path);
+          return false;
+        }
       }
     }
 
@@ -445,7 +467,7 @@ bool ObjectiveCGenerator::GenerateAll(
           }
         }
 
-        for (int i = 0; i < file_generator.NumMessages(); ++i) {
+        for (size_t i = 0; i < file_generator.NumMessages(); ++i) {
           std::unique_ptr<io::ZeroCopyOutputStream> output(
               context->Open(NumberedObjCMFileName(filepath, file_number++)));
           io::Printer printer(output.get());

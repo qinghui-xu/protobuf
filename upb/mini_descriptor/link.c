@@ -58,7 +58,7 @@ bool upb_MiniTable_SetSubMessage(upb_MiniTable* table,
   upb_MiniTableSubInternal* table_subs = (void*)table->UPB_PRIVATE(subs);
   // TODO: Add this assert back once YouTube is updated to not call
   // this function repeatedly.
-  // UPB_ASSERT(UPB_PRIVATE(_upb_MiniTable_IsEmpty)(table_sub->submsg));
+  // UPB_ASSERT(upb_MiniTable_GetSubMessageTable(table, field) == NULL);
   memcpy((void*)table_subs[idx].UPB_PRIVATE(submsg), &sub, sizeof(void*));
   return true;
 }
@@ -69,6 +69,21 @@ bool upb_MiniTable_SetSubEnum(upb_MiniTable* table, upb_MiniTableField* field,
              (uintptr_t)field < (uintptr_t)(table->UPB_PRIVATE(fields) +
                                             table->UPB_PRIVATE(field_count)));
   UPB_ASSERT(sub);
+
+  if (field->UPB_PRIVATE(descriptortype) != kUpb_FieldType_Enum) {
+    return false;
+  }
+
+  if ((table->UPB_PRIVATE(ext) & kUpb_ExtMode_IsMapEntry) &&
+      !upb_MiniTableEnum_CheckValue(sub, 0)) {
+    // An enum used in a map must include 0 as a value.  This matches a check
+    // performed in protoc ("Enum value in map must define 0 as the first
+    // value").  Protoc should ensure that we never get here.
+    //
+    // This ends up being important if we receive wire messages where a map
+    // entry omits the value (and thus defaults to 0).
+    return false;
+  }
 
   upb_MiniTableSub* table_sub =
       (void*)&table->UPB_PRIVATE(subs)[field->UPB_PRIVATE(submsg_index)];

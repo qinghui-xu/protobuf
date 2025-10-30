@@ -8,12 +8,13 @@
 """Bazel's implementation of cc_proto_library"""
 
 load("@rules_cc//cc:find_cc_toolchain.bzl", "use_cc_toolchain")
+load("@rules_cc//cc/common:cc_info.bzl", "CcInfo")
 load("//bazel/common:proto_common.bzl", "proto_common")
 load("//bazel/common:proto_info.bzl", "ProtoInfo")
 load("//bazel/private:cc_proto_support.bzl", "cc_proto_compile_and_link")
 load("//bazel/private:toolchain_helpers.bzl", "toolchains")
 
-_CC_PROTO_TOOLCHAIN = "@rules_cc//cc/proto:toolchain_type"
+_CC_PROTO_TOOLCHAIN = Label("//bazel/private:cc_toolchain_type")
 
 _ProtoCcFilesInfo = provider(fields = ["files"], doc = "Provide cc proto files.")
 _ProtoCcHeaderInfo = provider(fields = ["headers"], doc = "Provide cc proto headers.")
@@ -181,7 +182,7 @@ proto_library(
     attrs = {
         "deps": attr.label_list(
             aspects = [cc_proto_aspect],
-            allow_rules = ["proto_library"],
+            providers = [ProtoInfo],
             allow_files = False,
             doc = """
 The list of <a href="protocol-buffer.html#proto_library"><code>proto_library</code></a>

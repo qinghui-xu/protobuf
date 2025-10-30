@@ -27,8 +27,8 @@ namespace kotlin {
 
 using google::protobuf::compiler::java::Options;
 
-KotlinGenerator::KotlinGenerator() {}
-KotlinGenerator::~KotlinGenerator() {}
+KotlinGenerator::KotlinGenerator() = default;
+KotlinGenerator::~KotlinGenerator() = default;
 
 uint64_t KotlinGenerator::GetSupportedFeatures() const {
   return CodeGenerator::Feature::FEATURE_PROTO3_OPTIONAL |
@@ -68,6 +68,7 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
       file_options.strip_nonfunctional_codegen = true;
     } else if (option.first == "no_jvm_dsl") {
       file_options.jvm_dsl = false;
+      file_options.dsl_use_concrete_types = true;
     } else {
       *error = absl::StrCat("Unknown generator option: ", option.first);
       return false;
@@ -81,8 +82,8 @@ bool KotlinGenerator::Generate(const FileDescriptor* file,
   std::vector<std::string> all_files;
   std::vector<std::string> all_annotations;
 
-  std::unique_ptr<FileGenerator> file_generator(
-      new FileGenerator(file, file_options));
+  std::unique_ptr<FileGenerator> file_generator =
+      std::make_unique<FileGenerator>(file, file_options);
 
   if (!file_generator) return false;
 

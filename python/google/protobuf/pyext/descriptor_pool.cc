@@ -210,6 +210,7 @@ static void Dealloc(PyObject* pself) {
     delete self->pool;
   }
   delete self->error_collector;
+  PyObject_GC_UnTrack(pself);
   Py_TYPE(self)->tp_free(pself);
 }
 
@@ -507,7 +508,8 @@ static PyObject* AddSerializedFile(PyObject* pself, PyObject* serialized_pb) {
   }
 
   FileDescriptorProto file_proto;
-  if (!file_proto.ParseFromArray(message_type, message_len)) {
+  if (!file_proto.ParseFromString(
+          absl::string_view(message_type, message_len))) {
     PyErr_SetString(PyExc_TypeError, "Couldn't parse file content!");
     return nullptr;
   }
